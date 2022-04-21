@@ -148,7 +148,6 @@ final class Logger extends AbstractLogger {
 				'code'    => $e->getCode(),
 				'file'    => $e->getFile(),
 				'line'    => $e->getLine(),
-				'trace'   => $e->getTrace(),
 			],
 			\JSON_UNESCAPED_SLASHES
 		);
@@ -183,7 +182,7 @@ final class Logger extends AbstractLogger {
 	 * @return bool
 	 */
 	protected function handle_level( $level ): bool {
-		return $this->minimum_level_code >= 0 && $this->minimum_level_code >= $this->get_level_code( $level );
+		return $this->minimum_level_code >= 0 && $this->minimum_level_code <= $this->get_level_code( $level );
 	}
 
 	/**

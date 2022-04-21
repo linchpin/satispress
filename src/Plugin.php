@@ -43,9 +43,10 @@ class Plugin extends BasePlugin implements Composable {
 			->register_hooks( $container->get( 'hooks.i18n' ) )
 			->register_hooks( $container->get( 'hooks.capabilities' ) )
 			->register_hooks( $container->get( 'hooks.rewrite_rules' ) )
-			->register_hooks( $container->get( 'hooks.ajax.api_key' ) )
 			->register_hooks( $container->get( 'hooks.custom_vendor' ) )
+			->register_hooks( $container->get( 'hooks.health_check' ) )
 			->register_hooks( $container->get( 'hooks.request_handler' ) )
+			->register_hooks( $container->get( 'hooks.rest' ) )
 			->register_hooks( $container->get( 'hooks.package_archiver' ) );
 
 		if ( is_admin() ) {
@@ -53,13 +54,15 @@ class Plugin extends BasePlugin implements Composable {
 				->register_hooks( $container->get( 'hooks.upgrade' ) )
 				->register_hooks( $container->get( 'hooks.admin_assets' ) )
 				->register_hooks( $container->get( 'screen.edit_user' ) )
-				->register_hooks( $container->get( 'screen.manage_plugins' ) )
 				->register_hooks( $container->get( 'screen.settings' ) );
 		}
 
+		if ( \function_exists( 'envato_market' ) ) {
+			$this->register_hooks( $container->get( 'plugin.envato_market' ) );
+		}
+
 		if ( \function_exists( 'members_plugin' ) ) {
-			$this
-				->register_hooks( $container->get( 'plugin.members' ) );
+			$this->register_hooks( $container->get( 'plugin.members' ) );
 		}
 
 		/**

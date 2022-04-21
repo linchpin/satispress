@@ -15,13 +15,17 @@ declare ( strict_types = 1 );
 
 namespace SatisPress;
 
+use LogicException;
 use PclZip;
+use Pimple\ServiceIterator;
 use Psr\Log\LoggerInterface;
 use SatisPress\Exception\FileDownloadFailed;
 use SatisPress\Exception\FileOperationFailed;
+use SatisPress\Exception\InvalidPackageArtifact;
 use SatisPress\Exception\InvalidReleaseVersion;
 use SatisPress\Exception\PackageNotInstalled;
 use SatisPress\PackageType\Plugin;
+use SatisPress\Validator\ArtifactValidator;
 
 /**
  * Archiver class.
@@ -37,6 +41,13 @@ class Archiver {
 	protected $logger;
 
 	/**
+	 * Artifact validators.
+	 *
+	 * @var ServiceIterator
+	 */
+	protected $validators = [];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param LoggerInterface $logger Logger.
@@ -46,13 +57,26 @@ class Archiver {
 	}
 
 	/**
+	 * Register artifact validators.
+	 *
+	 * @since 0.7.0
+	 *
+	 * @param ServiceIterator $validators Artifact validators.
+	 * @return $this
+	 */
+	public function register_validators( ServiceIterator $validators ) {
+		$this->validators = $validators;
+		return $this;
+	}
+
+	/**
 	 * Create a package artifact from the installed source.
 	 *
 	 * @since 0.3.0
 	 *
 	 * @param Package $package Installed package instance.
 	 * @param string  $version Release version.
-	 * @throws InvalidReleaseVersion If the version is invalid.
+	 * @throws PackageNotInstalled If the package is not installed.
 	 * @throws FileOperationFailed If a temporary working directory can't be created.
 	 * @throws FileOperationFailed If zip creation fails.
 	 * @return string Absolute path to the artifact.
@@ -104,7 +128,7 @@ class Archiver {
 	/**
 	 * Get the list of files to exclude from a package artifact.
 	 *
-	 * @since 0.6.0
+	 * @since 0.5.2
 	 *
 	 * @param Package $package Installed package instance.
 	 * @param Release $release Release instance.
@@ -119,7 +143,6 @@ class Archiver {
 			$excludes = [
 				'.DS_Store',
 				'.git',
-				'node_modules',
 			];
 		}
 
@@ -161,14 +184,17 @@ class Archiver {
 	 * @param Release $release Release instance.
 	 * @throws FileDownloadFailed  If the artifact can't be downloaded.
 	 * @throws FileOperationFailed If a temporary working directory can't be created.
+	 * @throws LogicException If a registered server doesn't implement the server interface.
+	 * @throws InvalidPackageArtifact If downloaded artifact cannot be validated.
 	 * @throws FileOperationFailed If a temporary artifact can't be renamed.
 	 * @return string Absolute path to the artifact.
 	 */
 	public function archive_from_url( Release $release ): string {
 		include_once ABSPATH . 'wp-admin/includes/file.php';
 
-		$filename = $this->get_absolute_path( $release->get_file() );
-		$tmpfname = download_url( $release->get_source_url() );
+		$filename     = $this->get_absolute_path( $release->get_file() );
+		$download_url = apply_filters( 'satispress_package_download_url', $release->get_source_url(), $release );
+		$tmpfname     = download_url( $download_url );
 
 		if ( is_wp_error( $tmpfname ) ) {
 			$this->logger->error(
@@ -184,6 +210,16 @@ class Archiver {
 
 		if ( ! wp_mkdir_p( \dirname( $filename ) ) ) {
 			throw FileOperationFailed::unableToCreateTemporaryDirectory( $filename );
+		}
+
+		foreach ( $this->validators as $validator ) {
+			if ( ! $validator instanceof ArtifactValidator ) {
+				throw new LogicException( 'Artifact validators must implement \SatisPress\Validator\ArtifactValidator.' );
+			}
+
+			if ( ! $validator->validate( $tmpfname, $release ) ) {
+				throw new InvalidPackageArtifact( "Unable to validate {$tmpfname} as a zip archive." );
+			}
 		}
 
 		if ( ! rename( $tmpfname, $filename ) ) {

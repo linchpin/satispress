@@ -1,6 +1,6 @@
 {
 	"name": "satispress",
-	"version": "0.5.2",
+	"version": "1.0.3",
 	"description": "Generate a Composer repository from installed WordPress plugins and themes.",
 	"repository": {
 		"type": "git",
@@ -17,14 +17,10 @@
 	},
 	"homepage": "https://github.com/cedaro/satispress",
 	"devDependencies": {
-		"archiver": "^2.1.1",
-		"fs-extra": "^7.0.0",
-		"glob": "^7.1.2",
-		"minimist": "^1.2.0",
-		"node-wp-i18n": "^1.2.0"
-	},
-	"scripts": {
-		"makepot": "wpi18n makepot --poedit"
+		"archiver": "^5.2.0",
+		"fs-extra": "^9.0.1",
+		"glob": "^7.1.6",
+		"minimist": "^1.2.5"
 	},
 	"distFiles": [
 		"satispress.php",

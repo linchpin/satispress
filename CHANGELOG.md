@@ -2,10 +2,66 @@
 
 ## [Unreleased]
 
+## [1.0.3] - 2022-01-07
+
+* Added a search field in the package selector sidebar. Props [@DavidSingh3](https://github.com/DavidSingh3)
+* Added support for composer/installers 2.0+ for packages served by SatisPress. Props [@tyrann0us](https://github.com/tyrann0us)
+* Added support for PHP 8.
+
+## [1.0.2] - 2021-07-27
+
+* Fixed a parse error in the Envato Market integration.
+* Skipped releases without a SemVer compliant version string in the Composer repository transformer to prevent fatal errors. [See #160](https://github.com/cedaro/satispress/issues/160). Props [@DavidSingh3](https://github.com/DavidSingh3)
+* Removed the trace from `\SatisPress\Logger\format_exception()` to prevent fatal errors.
+
+## [1.0.1] - 2021-04-12
+
+* Fixed the validation logic in the hidden directory validator and updated the test. See [#142](https://github.com/cedaro/satispress/issues/142). Props [@patrick-leb](https://github.com/patrick-leb) for troubleshooting and help in resolving this issue.
+* Fixed a fatal error in the Envato Market adapter. See [#153](https://github.com/cedaro/satispress/issues/153)
+
+## [1.0.0] - 2021-03-03
+
+* Updated the admin interface to make it easier to manage the repository from a single screen.
+* Introduced REST endpoints for managing SatisPress resources:
+	* `/satispress/v1/packages`
+	* `/satispress/v1/plugins`
+	* `/satispress/v1/themes`
+* Removed the meta capability check from the Composer repository transformer. This allowed packages or individual releases to be filtered from `packages.json`, but prevented the transformer from being used in other scenarios.
+* Removed a type hint from the `upgrader_post_install` to prevent fatal errors when a `WP_Error` object is passed as a parameter. See [#152](https://github.com/cedaro/satispress/issues/152)
+
+## [0.7.2] - 2021-02-11
+
+* Fixed an incorrect variable name in the `HiddenDirectoryValidator` that caused a fatal error.
+* Added a Health Check feature to display admin notices for common configuration issues.
+* Fixed authentication integration tests to check for the correct exception type after preventing `AuthenticationException`s from being thrown in [a2415c7](https://github.com/cedaro/satispress/commit/a2415c7eaf2f3b7f4bb81baf7bed22cb19aad26e).
+* Moved validator tests to the integration test suite.
+* Removed the `PclZip` development dependency from `composer.json`. WordPress uses a patched version and in cases where it was inadvertently installed, it could cause issues. See [#149](https://github.com/cedaro/satispress/issues/149).
+
+## [0.7.1] - 2021-02-04
+
+* There weren't any changes in this release. The version number was bumped to allow Composer to install updates from the previously botched release process.
+
+## [0.7.0] - 2021-01-28
+
+* Introduced validators to prevent invalid artifacts from being cached when downloaded from the vendor.
+* Introduced adapters for downloading artifacts from vendors that use a non-standard update process.
+* Added a field to the SatisPress package list screen to copy the CLI command for requiring a package in `composer.json`.
+* Fixed a bug with the logger not logging messages above the specified log level.
+
+## [0.6.0] - 2021-01-11
+
+* Added the `satispress_package_download_url` filter. This can be used to ignore update requests from vendors with custom update routines that cause invalid artifacts to be downloaded.
+* Created missing artifacts from source for the currently installed version of a package when viewing the `packages.json` endpoint. This allows updates made through FTP, git, or the admin UI to be archived automatically and included in `packages.json` without having to perform any additional manual steps. See [#131](https://github.com/cedaro/satispress/issues/131)
+* Archived packages automatically when they're upgraded in the WordPress admin panel.
+* Coerced package download URLs retrieved from the `update_plugins` and `update_themes` transients to strings before using them to prevent fatal errors caused by packages that inject unexpected data. See [#106](https://github.com/cedaro/satispress/issues/106)
+* Updated `dealerdirect/phpcodesniffer-composer-installer` for Composer 2 compatibility. Props [@aaronware](https://github.com/aaronware) 
+* Updated `composer/semver` dependency to version 3.2.
+
 ## [0.5.2] - 2020-12-01
 
 * Cast meta keys to strings in `SatisPress\Authentication\ApiKey\ApiKeyRepository::find_for_user()` to prevent fatal errors in some situations [#133](https://github.com/cedaro/satispress/issues/133).
 * Fixed a fatal error when `wp_parse_url()` returned `null` [#135](https://github.com/cedaro/satispress/pull/135). Props [@danielbachhuber](https://github.com/danielbachhuber)
+* Moved functionality for determining excluded files to `SatisPress\Archiver::get_excluded_files()`.
 
 ## [0.5.1] - 2020-03-03
 
@@ -63,7 +119,15 @@ Major changes include:
 * [Capabilities](docs/security.md#capabilities) were added for viewing and downloading packages, as well as managing SatisPress options. Only administrators have access by default.
 * The storage layer was abstracted to make it swappable.
 
-[Unreleased]: https://github.com/cedaro/satispress/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/cedaro/satispress/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/cedaro/satispress/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/cedaro/satispress/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/cedaro/satispress/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/cedaro/satispress/compare/v0.7.2...v1.0.0
+[0.7.2]: https://github.com/cedaro/satispress/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/cedaro/satispress/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/cedaro/satispress/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/cedaro/satispress/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/cedaro/satispress/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/cedaro/satispress/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/cedaro/satispress/compare/v0.4.1...v0.5.0
